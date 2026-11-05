@@ -28,8 +28,14 @@ st.set_page_config(page_title="Judge the Model", layout="wide")
 
 
 @st.cache_data
-def load(name: str):
+def _load(name: str, modified: float):
     return m11.load(name)
+
+
+def load(name: str):
+    """Read results/<name>.json, re-reading it whenever the file changes (so new results and decisions show up)."""
+    path = m11.RESULTS / f"{name}.json"
+    return _load(name, path.stat().st_mtime if path.exists() else 0.0)
 
 
 def recommendations() -> None:
