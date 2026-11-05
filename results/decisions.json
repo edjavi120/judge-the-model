@@ -1,11 +1,11 @@
 {
-  "exported_at": null,
-  "words": 0,
+  "exported_at": "2026-11-05T18:50:53Z",
+  "words": 100,
   "word_limit": 150,
   "sections": {
     "before_results": {
-      "readmission": "",
-      "diabetes": ""
+      "readmission": "Positive class is a patient readmitted within 30 days. A missed positive matters more than a false alarm. Both errors are bad, but a missed patient who needs more treatment and doesn't receive it can get worse, and the health problem can grow bigger while going untreated.",
+      "diabetes": "Positive class is a doctor diagnosis of diabetes or HbA1c of 6.5% or higher. A missed positive matters more than a false alarm. If a patient's diabetes goes untreated it can worsen, and they could die several years later from complications; a patient who is treated has a much lower chance of dying."
     },
     "recommendations": {
       "readmission": "",
@@ -17,7 +17,7 @@
     }
   },
   "complete": {
-    "before_results": false,
+    "before_results": true,
     "recommendations": false,
     "design": false
   },
