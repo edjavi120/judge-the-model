@@ -47,10 +47,11 @@ def recommendations() -> None:
 
 def matrix_frame(c: dict, key: str) -> pd.DataFrame:
     """Confusion matrix: actual outcomes as rows, predicted outcomes as columns."""
-    pos = POSITIVE[key].split(" (")[0]
+    rows = {"readmission": ("Readmitted within 30 days", "Not readmitted within 30 days"),
+            "diabetes": ("Has diabetes", "Does not have diabetes")}[key]
     return pd.DataFrame(
         [[c["tp"], c["fn"]], [c["fp"], c["tn"]]],
-        index=[f"Actually: {pos}", f"Actually: not {pos}"],
+        index=[f"Actually: {rows[0]}", f"Actually: {rows[1]}"],
         columns=["Flagged (predicted positive)", "Not flagged (predicted negative)"],
     )
 
@@ -202,6 +203,25 @@ def train_vs_test(key: str, res: dict, model: str) -> None:
         st.warning("Not trained yet: " + ", ".join(missing) + ". Run `python -m analysis`, then commit and push `results/`.")
 
 
+def priority_panel(key: str) -> None:
+    """Design choice: which error matters most for this job, in the author's own words from DECISIONS.md."""
+    d = load("decisions") or {}
+    why = (d.get("sections", {}).get("before_results", {}) or {}).get(key, "")
+    miss = {"readmission": "a patient who will be readmitted is not flagged, so gets no extra follow-up",
+            "diabetes": "an adult who has diabetes is not flagged, so gets no follow-up test"}[key]
+    alarm = {"readmission": "a patient who will not be readmitted is flagged, so uses extra staff time",
+             "diabetes": "an adult without diabetes is flagged, so gets an extra test they did not need"}[key]
+    with st.container(border=True):
+        st.subheader("Which mistake matters most for this job?")
+        c1, c2 = st.columns(2)
+        c1.markdown(f"**Missed positive (false negative):** {miss}.")
+        c2.markdown(f"**False alarm (false positive):** {alarm}.")
+        if why:
+            st.markdown(f"**Our reasoning, written before seeing any results:** {why}")
+        else:
+            st.caption("No reasoning yet: fill in `Before results` in DECISIONS.md and run `python -m analysis`.")
+
+
 RENDER = dict(zip(SECTIONS, [beyond_accuracy, threshold, train_vs_test]))
 
 st.title("Judge the Model")
@@ -215,6 +235,7 @@ model = st.sidebar.selectbox("Model", m11.MODELS,
 st.header(section)
 st.caption(f"{m11.DATASET_LABEL[key]}: {res['train']['n']:,} training rows ({res['train']['n_pos']:,} positive), "
            f"{res['test']['n']:,} test rows ({res['test']['n_pos']:,} positive).")
+priority_panel(key)
 if section == SECTIONS[2] or model in res["models"]:
     RENDER[section](key, res, model)
 else:
